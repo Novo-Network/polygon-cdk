@@ -1,0 +1,3 @@
+[submodule "cdk-validium-contracts"]
+	path = cdk-validium-contracts
+	url = https://github.com/0xPolygon/cdk-validium-contracts
