@@ -8,13 +8,13 @@ pub struct CommandLine {
     #[clap(short, long)]
     rpc: String,
 
-    #[clap(short, long)]
+    #[clap(long)]
     sk: String,
 
     #[clap(short, long)]
     btc_address: String,
 
-    #[clap(short, long)]
+    #[clap(long)]
     salt: String,
 }
 
