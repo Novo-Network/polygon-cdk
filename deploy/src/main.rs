@@ -1,6 +1,7 @@
 mod command_line;
 mod contracts;
 mod deploy;
+mod utils;
 
 use anyhow::Result;
 use clap::Parser;
