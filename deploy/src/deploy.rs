@@ -3,9 +3,9 @@ use std::{str::FromStr, sync::Arc};
 use crate::{
     contracts::{
         polygon_zk_evm_bridge, proxy_admin::TransferOwnershipCall, DeployDeterministicAndCallCall,
-        DeployDeterministicCall, NewDeterministicDeploymentFilter, CDKDATACOMMITTEE_BYTECODE,
-        CDKVALIDIUMDEPLOYER_BYTECODE, CDKVALIDIUM_BYTECODE, POLYGONZKEVMBRIDGE_BYTECODE,
-        POLYGONZKEVMGLOBALEXITROOT_BYTECODE, PROXYADMIN_BYTECODE,
+        DeployDeterministicCall, NewDeterministicDeploymentFilter, SetupCommitteeCall,
+        CDKDATACOMMITTEE_BYTECODE, CDKVALIDIUMDEPLOYER_BYTECODE, CDKVALIDIUM_BYTECODE,
+        POLYGONZKEVMBRIDGE_BYTECODE, POLYGONZKEVMGLOBALEXITROOT_BYTECODE, PROXYADMIN_BYTECODE,
         TRANSPARENTUPGRADEABLEPROXY_BYTECODE,
     },
     utils::{get_transaction_receipt, send_transaction, wait_transaction},
@@ -19,7 +19,7 @@ use ethers::{
     middleware::SignerMiddleware,
     providers::{Http, Middleware, Provider},
     signers::{LocalWallet, Signer},
-    types::{H160, U256, U64},
+    types::{Bytes, H160, U256, U64},
     utils::{hex, keccak256},
 };
 
@@ -42,7 +42,7 @@ impl Deploy {
         min_delay: u64,
         timelock_address: H160,
     ) -> Result<Self> {
-        let wallet = LocalWallet::from_bytes(&hex::decode(sk.strip_prefix("0x").unwrap_or(&sk))?)?;
+        let wallet = LocalWallet::from_bytes(&hex::decode(sk.strip_prefix("0x").unwrap_or(sk))?)?;
         let provider = Provider::<Http>::try_from(rpc)?;
 
         let client = Arc::new(SignerMiddleware::new(
@@ -161,7 +161,7 @@ impl Deploy {
             transaction_hash
         );
 
-        wait_transaction(self.client.clone(), transaction_hash.clone()).await?;
+        wait_transaction(self.client.clone(), transaction_hash).await?;
 
         let contract_address = get_transaction_receipt(self.client.clone(), transaction_hash)
             .await?
@@ -192,7 +192,7 @@ impl Deploy {
         )
         .await?;
 
-        wait_transaction(self.client.clone(), transaction_hash.clone()).await?;
+        wait_transaction(self.client.clone(), transaction_hash).await?;
 
         let logs = get_transaction_receipt(self.client.clone(), transaction_hash)
             .await?
@@ -239,7 +239,7 @@ impl Deploy {
             )
             .await?;
 
-            wait_transaction(self.client.clone(), transaction_hash.clone()).await?;
+            wait_transaction(self.client.clone(), transaction_hash).await?;
 
             let logs = get_transaction_receipt(self.client.clone(), transaction_hash)
                 .await?
@@ -288,7 +288,7 @@ impl Deploy {
         )
         .await?;
 
-        wait_transaction(self.client.clone(), transaction_hash.clone()).await?;
+        wait_transaction(self.client.clone(), transaction_hash).await?;
 
         let logs = get_transaction_receipt(self.client.clone(), transaction_hash)
             .await?
@@ -335,7 +335,7 @@ impl Deploy {
         )
         .await?;
 
-        wait_transaction(self.client.clone(), transaction_hash.clone()).await?;
+        wait_transaction(self.client.clone(), transaction_hash).await?;
 
         if Some(U64::one())
             != self
@@ -361,7 +361,7 @@ impl Deploy {
             )
             .await?;
 
-            wait_transaction(self.client.clone(), transaction_hash.clone()).await?;
+            wait_transaction(self.client.clone(), transaction_hash).await?;
 
             get_transaction_receipt(self.client.clone(), transaction_hash)
                 .await?
@@ -383,7 +383,7 @@ impl Deploy {
             let transaction_hash =
                 send_transaction(self.client.clone(), data, None, U256::zero()).await?;
 
-            wait_transaction(self.client.clone(), transaction_hash.clone()).await?;
+            wait_transaction(self.client.clone(), transaction_hash).await?;
 
             get_transaction_receipt(self.client.clone(), transaction_hash)
                 .await?
@@ -391,7 +391,7 @@ impl Deploy {
                 .ok_or(anyhow!("receipt contract_address not found"))?
         };
 
-        /*let data = SetupCommitteeCall {
+        let data = SetupCommitteeCall {
             required_amount_of_signatures: U256::zero(),
             urls: Vec::new(),
             addrs_bytes: Bytes::new(),
@@ -401,7 +401,7 @@ impl Deploy {
         let transaction_hash = send_transaction(
             self.client.clone(),
             data,
-            Some(cdk_data_committee_proxy_address),
+            Some(proxy_contract_address),
             U256::zero(),
         )
         .await?;
@@ -410,7 +410,7 @@ impl Deploy {
             transaction_hash
         );
 
-        wait_transaction(self.client.clone(), transaction_hash.clone()).await?;
+        wait_transaction(self.client.clone(), transaction_hash).await?;
 
         if Some(U64::one())
             != self
@@ -422,8 +422,8 @@ impl Deploy {
         {
             Err(anyhow!("call setupCommittee error"))
         } else {
-        }*/
-        Ok(proxy_contract_address)
+            Ok(proxy_contract_address)
+        }
     }
 
     async fn deploy_polygon_zkevm_global_exit_root(
@@ -445,7 +445,7 @@ impl Deploy {
             let transaction_hash =
                 send_transaction(self.client.clone(), data, None, U256::zero()).await?;
 
-            wait_transaction(self.client.clone(), transaction_hash.clone()).await?;
+            wait_transaction(self.client.clone(), transaction_hash).await?;
 
             get_transaction_receipt(self.client.clone(), transaction_hash)
                 .await?
@@ -467,7 +467,7 @@ impl Deploy {
             let transaction_hash =
                 send_transaction(self.client.clone(), data, None, U256::zero()).await?;
 
-            wait_transaction(self.client.clone(), transaction_hash.clone()).await?;
+            wait_transaction(self.client.clone(), transaction_hash).await?;
 
             get_transaction_receipt(self.client.clone(), transaction_hash)
                 .await?
@@ -505,7 +505,7 @@ impl Deploy {
             let transaction_hash =
                 send_transaction(self.client.clone(), data, None, U256::zero()).await?;
 
-            wait_transaction(self.client.clone(), transaction_hash.clone()).await?;
+            wait_transaction(self.client.clone(), transaction_hash).await?;
 
             get_transaction_receipt(self.client.clone(), transaction_hash)
                 .await?
@@ -527,7 +527,7 @@ impl Deploy {
             let transaction_hash =
                 send_transaction(self.client.clone(), data, None, U256::zero()).await?;
 
-            wait_transaction(self.client.clone(), transaction_hash.clone()).await?;
+            wait_transaction(self.client.clone(), transaction_hash).await?;
 
             get_transaction_receipt(self.client.clone(), transaction_hash)
                 .await?
@@ -559,7 +559,7 @@ impl Deploy {
             transaction_hash
         );
 
-        wait_transaction(self.client.clone(), transaction_hash.clone()).await?;
+        wait_transaction(self.client.clone(), transaction_hash).await?;
 
         let contract_address = get_transaction_receipt(self.client.clone(), transaction_hash)
             .await?

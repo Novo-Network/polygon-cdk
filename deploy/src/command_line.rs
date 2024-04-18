@@ -1,6 +1,6 @@
 use anyhow::Result;
 use clap::Parser;
-use ethers::types::{H160, U256};
+use ethers::types::H160;
 
 use crate::deploy::Deploy;
 
